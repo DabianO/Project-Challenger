@@ -130,6 +130,8 @@ public class StartingClass extends Applet implements Runnable, KeyListener {
 
 			animate();
 			repaint();
+			
+			enemy.update();
 
 			try {
 				Thread.sleep(17);

@@ -2,44 +2,35 @@ package kiloboltgame;
 
 public class Enemy {
 
-	final int FLOATINGDOWN = 5;
-	final int FLOATINGUP = -5;
-
+	
+	private int maxRange;
+	
 	private int maxHealth, currentHealth, power, speedX, speedY, centerX,
 			centerY;
 	private Background bg = StartingClass.getBg1();
 
-	private int staticCenterY = 0;
-	private int speedYUp = -1;
-	private int speedYDown = 1;
+	private int staticCenterY = centerY;
+	private int speedUpdown = -1;
 	
-	private StartingClass floatingDown;
-	
-	public void floating(){
-		floatingDown = new StartingClass();
-	}
+	private boolean floatingDown;
 	
 	// Behavioral Methods
 	public void update() {
 		centerX += speedX;
 		speedX = bg.getSpeedX();
-				
-		staticCenterY = centerY;
-
-		if (centerY <= staticCenterY + FLOATINGDOWN && floatingDown.isFloatingDown()== true) {
-			centerY += speedYDown;
-			if (centerY >= staticCenterY + FLOATINGDOWN){
-				floatingDown.setFloatingDown(false);
-				
-			}
+		
+		centerY += speedUpdown;
+		maxRange += 1;
+		
+		if (maxRange >= 10) {
+			maxRange = 0;
+			if(speedUpdown == -1){
+				speedUpdown = 1;
+			} else {
+				speedUpdown = -1;
+			}	
 		}
 		
-		if (centerY >= staticCenterY + FLOATINGUP && floatingDown.isFloatingDown() == false) {
-			centerY += speedYUp;
-			if (centerY >= staticCenterY + FLOATINGUP){
-				floatingDown.setFloatingDown(true);
-			}
-		} 
 	}
 	
 	public void die() {
