@@ -13,6 +13,8 @@ import kiloboltgame.framework.Animation;
 
 public class StartingClass extends Applet implements Runnable, KeyListener {
 
+	private int floatingHeli;
+	
 	private Robot robot;
 	private Enemy enemy;
 	private Heliboy hb, hb2;
@@ -24,7 +26,6 @@ public class StartingClass extends Applet implements Runnable, KeyListener {
 	private URL base;
 	private static Background bg1, bg2;
 	
-	private boolean floatingDown = false;
 
 	@Override
 	public void init() {
@@ -122,16 +123,21 @@ public class StartingClass extends Applet implements Runnable, KeyListener {
 				}
 			}
 
-			hb.update();
-			hb2.update();
-
+			
 			bg1.update();
 			bg2.update();
 
 			animate();
 			repaint();
 			
-			enemy.update();
+			floatingHeli += 1;
+			
+			if (floatingHeli == 2){
+				floatingHeli = 0;
+				hb.update();
+				hb2.update();
+			}
+			
 
 			try {
 				Thread.sleep(17);
@@ -268,13 +274,5 @@ public class StartingClass extends Applet implements Runnable, KeyListener {
 
 	public static void setBg2(Background bg2) {
 		StartingClass.bg2 = bg2;
-	}
-
-	public boolean isFloatingDown() {
-		return floatingDown;
-	}
-
-	public void setFloatingDown(boolean floatingDown) {
-		this.floatingDown = floatingDown;
 	}
 }
