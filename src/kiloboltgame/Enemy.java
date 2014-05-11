@@ -12,7 +12,7 @@ public class Enemy {
 	// Behavioral Methods
 	public void update() {
 		centerX += speedX;
-		speedX = bg.getSpeedX();
+		speedX = bg.getSpeedX()*5;
 
 		centerY += speedUpdown;
 		maxRange += 1;
