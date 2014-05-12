@@ -7,7 +7,7 @@ public class Robot {
 	// In Java, Class Variables should be private so that only its methods can
 	// change them
 	final int JUMPSPEED = -15;
-	final int JUMPSPEED2 = -15;
+	final int JUMPSPEED2 = -10;
 	final int MOVESPEED = 5;
 
 	private int centerX = 100;
@@ -61,7 +61,7 @@ public class Robot {
 	
 		if (speedY > 3){
 			jumped = true;
-			jumpLimit = false;
+			
 		}
 		
 		// Prevents going beyond coordinate of 0
@@ -117,6 +117,7 @@ public class Robot {
 			speedY += JUMPSPEED2;
 			jumpLimit = true;
 		}
+		
 		if (jumped == false) {
 			speedY = JUMPSPEED;
 			jumped = true;
@@ -205,6 +206,14 @@ public class Robot {
 
 	public void setReadyToFire(boolean readyToFire) {
 		this.readyToFire = readyToFire;
+	}
+
+	public boolean isJumpLimit() {
+		return jumpLimit;
+	}
+
+	public void setJumpLimit(boolean jumpLimit) {
+		this.jumpLimit = jumpLimit;
 	}
 
 }
