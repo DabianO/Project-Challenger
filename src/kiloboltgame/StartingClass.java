@@ -2,35 +2,43 @@ package kiloboltgame;
 
 import java.applet.Applet;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+
 import kiloboltgame.framework.Animation;
 
 public class StartingClass extends Applet implements Runnable, KeyListener {
 
 	private int floatingHeli;
-	
-	private Robot robot;
-	private Enemy enemy;
-	private Heliboy hb, hb2;
+
+	private static Robot robot;
+	public static Heliboy hb, hb2;
+	public static int score = 0;
+	private Font font = new Font(null, Font.BOLD, 30);
 	private Image image, currentSprite, character, character2, character3,
 			characterDown, characterJumped, heliboy, heliboy2, heliboy3,
 			heliboy4, heliboy5, background;
+
 	
-	public static Image tiledirt, tileocean;
 	
+	public static Image tilegrassTop, tilegrassBot, tilegrassLeft,
+			tilegrassRight, tiledirt;
+
 	private Animation anim, hanim;
 	private Graphics second;
 	private URL base;
 	private static Background bg1, bg2;
-	
-	private ArrayList<Tile>tilearray = new ArrayList<Tile>();
-	
+
+	private ArrayList<Tile> tilearray = new ArrayList<Tile>();
 
 	@Override
 	public void init() {
@@ -63,8 +71,11 @@ public class StartingClass extends Applet implements Runnable, KeyListener {
 		background = getImage(base, "data/background.png");
 
 		tiledirt = getImage(base, "data/tiledirt.png");
-		tileocean = getImage (base, "data/tileocean.png");
-		
+		tilegrassTop = getImage(base, "data/tilegrasstop.png");
+		tilegrassBot = getImage(base, "data/tilegrassbot.png");
+		tilegrassLeft = getImage(base, "data/tilegrassleft.png");
+		tilegrassRight = getImage(base, "data/tilegrassright.png");
+
 		anim = new Animation();
 		anim.addFrame(character, 1250);
 		anim.addFrame(character2, 50);
@@ -89,34 +100,61 @@ public class StartingClass extends Applet implements Runnable, KeyListener {
 	public void start() {
 		bg1 = new Background(0, 0);
 		bg2 = new Background(2160, 0);
+		robot = new Robot();
 		
-		//Initialize Tiles
-		
-		for (int i = 0; i < 200; i++) {
-			for (int j = 0; j < 12; j++) {
-
-				if (j == 11) {
-					Tile t = new Tile(i, j, 2);
-					tilearray.add(t);
-
-				} if (j == 10) {
-					Tile t = new Tile(i, j, 1);
-					tilearray.add(t);
-
-				}
-			}
+		// Initialize Tiles
+		try {
+			loadMap("data/map1.txt");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		
-		
-		
+
 		hb = new Heliboy(340, 300);
 		hb2 = new Heliboy(700, 200);
-		robot = new Robot();
-		enemy = new Enemy();
-
+		
 		Thread thread = new Thread(this);
 		thread.start();
 		// TODO Auto-generated method stub
+	}
+
+	private void loadMap(String filename) throws IOException {
+		// TODO Auto-generated method stub
+		
+		ArrayList lines = new ArrayList();
+		int width = 0;
+		int height = 0;
+
+		BufferedReader reader = new BufferedReader(new FileReader(filename));
+		while (true) {
+			String line = reader.readLine();
+			// no more lines to read
+			if (line == null) {
+				reader.close();
+				break;
+			}
+
+			if (!line.startsWith("!")) {
+				lines.add(line);
+				width = Math.max(width, line.length());
+
+			}
+		}
+		height = lines.size();
+
+		for (int j = 0; j < 12; j++) {
+			String line = (String) lines.get(j);
+			for (int i = 0; i < width; i++) {
+				System.out.println(i + "is i ");
+
+				if (i < line.length()) {
+					char ch = line.charAt(i);
+					Tile t = new Tile(i, j, Character.getNumericValue(ch));
+					tilearray.add(t);
+				}
+
+			}
+		}
 	}
 
 	@Override
@@ -151,25 +189,21 @@ public class StartingClass extends Applet implements Runnable, KeyListener {
 				}
 			}
 
-			
 			bg1.update();
 			bg2.update();
 
 			updateTiles();
-			
+
 			floatingHeli += 1;
-			
-			if (floatingHeli == 2){
+
+			if (floatingHeli == 2) {
 				floatingHeli = 0;
 				hb.update();
 				hb2.update();
 			}
-			
+
 			animate();
 			repaint();
-			
-		
-			
 
 			try {
 				Thread.sleep(17);
@@ -206,8 +240,8 @@ public class StartingClass extends Applet implements Runnable, KeyListener {
 		g.drawImage(background, bg1.getBgX(), bg1.getBgY(), this);
 		g.drawImage(background, bg2.getBgX(), bg2.getBgY(), this);
 
-		paintTiles(g);		
-		
+		paintTiles(g);
+
 		ArrayList projectiles = robot.getProjectiles();
 		for (int i = 0; i < projectiles.size(); i++) {
 			Projectile p = (Projectile) projectiles.get(i);
@@ -215,12 +249,18 @@ public class StartingClass extends Applet implements Runnable, KeyListener {
 			g.fillRect(p.getX(), p.getY(), 10, 5);
 		}
 
+		
 		g.drawImage(currentSprite, robot.getCenterX() - 61,
 				robot.getCenterY() - 63, this);
 		g.drawImage(hanim.getImage(), hb.getCenterX() - 48,
 				hb.getCenterY() - 48, this);
 		g.drawImage(hanim.getImage(), hb2.getCenterX() - 48,
 				hb2.getCenterY() - 48, this);
+		g.setFont(font);
+		g.setColor(Color.WHITE);
+		g.drawString(Integer.toString(score), 740, 30);	
+		
+		
 	}
 
 	private void updateTiles() {
@@ -230,9 +270,7 @@ public class StartingClass extends Applet implements Runnable, KeyListener {
 			t.update();
 		}
 
-
 	}
-
 
 	private void paintTiles(Graphics g) {
 		for (int i = 0; i < tilearray.size(); i++) {
@@ -240,7 +278,7 @@ public class StartingClass extends Applet implements Runnable, KeyListener {
 			g.drawImage(t.getTileImage(), t.getTileX(), t.getTileY(), this);
 		}
 	}
-	
+
 	@Override
 	public void keyPressed(KeyEvent e) {
 		// TODO Auto-generated method stub
@@ -274,6 +312,7 @@ public class StartingClass extends Applet implements Runnable, KeyListener {
 		case KeyEvent.VK_CONTROL:
 			if (robot.isDucked() == false) {
 				robot.shoot();
+				robot.setReadyToFire(false);
 			}
 			break;
 
@@ -303,6 +342,10 @@ public class StartingClass extends Applet implements Runnable, KeyListener {
 
 		case KeyEvent.VK_SPACE:
 			break;
+			
+		case KeyEvent.VK_CONTROL:
+			robot.setReadyToFire(true);
+			break;
 		}
 	}
 
@@ -320,6 +363,10 @@ public class StartingClass extends Applet implements Runnable, KeyListener {
 		return bg2;
 	}
 
+	public static Robot getRobot(){
+		return robot;
+	}
+	
 	public static void setBg1(Background bg1) {
 		StartingClass.bg1 = bg1;
 	}

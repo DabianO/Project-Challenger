@@ -1,5 +1,7 @@
 package kiloboltgame;
 
+import java.awt.Rectangle;
+
 public class Enemy {
 
 	private int maxHealth, currentHealth, power, speedX, speedY, centerX,
@@ -8,12 +10,22 @@ public class Enemy {
 
 	private int maxRange = 0;
 	private int speedUpdown = -1;
+	
+	private Rectangle heliBoy1 = new Rectangle(0,0,0,0);
+	private Rectangle heliBoy2 = new Rectangle(0,0,0,0);
 
 	// Behavioral Methods
 	public void update() {
 		centerX += speedX;
 		speedX = bg.getSpeedX()*5;
-
+		
+		getHeliBoy1().setBounds(centerX - 25, centerY - 25,50,60);
+		getHeliBoy2().setBounds(centerX - 25, centerY - 25,50,60);
+		
+		if (getHeliBoy1().intersects(Robot.yellowRed) || getHeliBoy2().intersects(Robot.yellowRed)){
+			checkCollision();
+		}
+			
 		centerY += speedUpdown;
 		maxRange += 1;
 
@@ -27,7 +39,17 @@ public class Enemy {
 			}
 		}
 
-	
+	private void checkCollision() {
+		if (getHeliBoy1().intersects(Robot.rectBody) || getHeliBoy1().intersects(Robot.rectLegs) || getHeliBoy1().intersects(Robot.rectLeft) || getHeliBoy1().intersects(Robot.rectRight)){
+			System.out.println("collision");
+			
+			}
+		
+		if (getHeliBoy2().intersects(Robot.rectBody) || getHeliBoy2().intersects(Robot.rectLegs) || getHeliBoy2().intersects(Robot.rectLeft) || getHeliBoy2().intersects(Robot.rectRight)){
+			System.out.println("collision");
+			
+			}
+		}
 
 	public void die() {
 
@@ -91,5 +113,21 @@ public class Enemy {
 
 	public void setBg(Background bg) {
 		this.bg = bg;
+	}
+
+	public Rectangle getHeliBoy1() {
+		return heliBoy1;
+	}
+
+	public void setHeliBoy1(Rectangle heliBoy1) {
+		this.heliBoy1 = heliBoy1;
+	}
+
+	public Rectangle getHeliBoy2() {
+		return heliBoy2;
+	}
+
+	public void setHeliBoy2(Rectangle heliBoy2) {
+		this.heliBoy2 = heliBoy2;
 	}
 }
