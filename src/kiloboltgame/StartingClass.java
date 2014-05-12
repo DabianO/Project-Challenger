@@ -18,18 +18,23 @@ import kiloboltgame.framework.Animation;
 
 public class StartingClass extends Applet implements Runnable, KeyListener {
 
+	enum GameState {
+		Running, Dead
+	}
+
+	GameState state = GameState.Running;
+
 	private int floatingHeli;
 
 	private static Robot robot;
 	public static Heliboy hb, hb2;
+	public static Tile tile;
 	public static int score = 0;
 	private Font font = new Font(null, Font.BOLD, 30);
 	private Image image, currentSprite, character, character2, character3,
 			characterDown, characterJumped, heliboy, heliboy2, heliboy3,
 			heliboy4, heliboy5, background;
 
-	
-	
 	public static Image tilegrassTop, tilegrassBot, tilegrassLeft,
 			tilegrassRight, tiledirt;
 
@@ -101,7 +106,7 @@ public class StartingClass extends Applet implements Runnable, KeyListener {
 		bg1 = new Background(0, 0);
 		bg2 = new Background(2160, 0);
 		robot = new Robot();
-		
+
 		// Initialize Tiles
 		try {
 			loadMap("data/map1.txt");
@@ -112,7 +117,7 @@ public class StartingClass extends Applet implements Runnable, KeyListener {
 
 		hb = new Heliboy(340, 300);
 		hb2 = new Heliboy(700, 200);
-		
+
 		Thread thread = new Thread(this);
 		thread.start();
 		// TODO Auto-generated method stub
@@ -120,7 +125,7 @@ public class StartingClass extends Applet implements Runnable, KeyListener {
 
 	private void loadMap(String filename) throws IOException {
 		// TODO Auto-generated method stub
-		
+
 		ArrayList lines = new ArrayList();
 		int width = 0;
 		int height = 0;
@@ -170,47 +175,56 @@ public class StartingClass extends Applet implements Runnable, KeyListener {
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-		while (true) {
-			robot.update();
-			if (robot.isJumped()) {
-				currentSprite = characterJumped;
-			} else if (robot.isJumped() == false && robot.isDucked() == false) {
-				currentSprite = anim.getImage();
-			}
 
-			// Bullets
-			ArrayList projectiles = robot.getProjectiles();
-			for (int i = 0; i < projectiles.size(); i++) {
-				Projectile p = (Projectile) projectiles.get(i);
-				if (p.isVisible() == true) {
-					p.update();
-				} else {
-					projectiles.remove(i);
+		if (state == GameState.Running) {
+			while (true) {
+				robot.update();
+				if (robot.isJumped()) {
+					currentSprite = characterJumped;
+				} else if (robot.isJumped() == false
+						&& robot.isDucked() == false) {
+					currentSprite = anim.getImage();
+				}
+
+				// Bullets
+				ArrayList projectiles = robot.getProjectiles();
+				for (int i = 0; i < projectiles.size(); i++) {
+					Projectile p = (Projectile) projectiles.get(i);
+					if (p.isVisible() == true) {
+						p.update();
+					} else {
+						projectiles.remove(i);
+					}
+				}
+
+				bg1.update();
+				bg2.update();
+
+				updateTiles();
+
+				floatingHeli += 1;
+
+				if (floatingHeli == 2) {
+					floatingHeli = 0;
+					hb.update();
+					hb2.update();
+				}
+
+				animate();
+				repaint();
+
+				try {
+					Thread.sleep(17);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+
+				if (robot.getCenterY() > 500) {
+					state = GameState.Dead;
 				}
 			}
-
-			bg1.update();
-			bg2.update();
-
-			updateTiles();
-
-			floatingHeli += 1;
-
-			if (floatingHeli == 2) {
-				floatingHeli = 0;
-				hb.update();
-				hb2.update();
-			}
-
-			animate();
-			repaint();
-
-			try {
-				Thread.sleep(17);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
 		}
+
 	}
 
 	public void animate() {
@@ -236,31 +250,38 @@ public class StartingClass extends Applet implements Runnable, KeyListener {
 
 	@Override
 	public void paint(Graphics g) {
-		// TODO Auto-generated method stub
-		g.drawImage(background, bg1.getBgX(), bg1.getBgY(), this);
-		g.drawImage(background, bg2.getBgX(), bg2.getBgY(), this);
 
-		paintTiles(g);
+		if (state == GameState.Running) {
+			// TODO Auto-generated method stub
+			g.drawImage(background, bg1.getBgX(), bg1.getBgY(), this);
+			g.drawImage(background, bg2.getBgX(), bg2.getBgY(), this);
 
-		ArrayList projectiles = robot.getProjectiles();
-		for (int i = 0; i < projectiles.size(); i++) {
-			Projectile p = (Projectile) projectiles.get(i);
-			g.setColor(Color.YELLOW);
-			g.fillRect(p.getX(), p.getY(), 10, 5);
+			paintTiles(g);
+
+			ArrayList projectiles = robot.getProjectiles();
+			for (int i = 0; i < projectiles.size(); i++) {
+				Projectile p = (Projectile) projectiles.get(i);
+				g.setColor(Color.YELLOW);
+				g.fillRect(p.getX(), p.getY(), 10, 5);
+			}
+
+			g.drawImage(currentSprite, robot.getCenterX() - 61,
+					robot.getCenterY() - 63, this);
+			g.drawImage(hanim.getImage(), hb.getCenterX() - 48,
+					hb.getCenterY() - 48, this);
+			g.drawImage(hanim.getImage(), hb2.getCenterX() - 48,
+					hb2.getCenterY() - 48, this);
+			g.setFont(font);
+			g.setColor(Color.WHITE);
+			g.drawString(Integer.toString(score), 740, 30);
+
+		} else if (state == GameState.Dead) {
+			g.setColor(Color.BLACK);
+			g.fillRect(0, 0, 800, 480);
+			g.setColor(Color.WHITE);
+			g.drawString("You Died", 360, 240);
+			g.drawString("Press Enter to start over", 260, 300);
 		}
-
-		
-		g.drawImage(currentSprite, robot.getCenterX() - 61,
-				robot.getCenterY() - 63, this);
-		g.drawImage(hanim.getImage(), hb.getCenterX() - 48,
-				hb.getCenterY() - 48, this);
-		g.drawImage(hanim.getImage(), hb2.getCenterX() - 48,
-				hb2.getCenterY() - 48, this);
-		g.setFont(font);
-		g.setColor(Color.WHITE);
-		g.drawString(Integer.toString(score), 740, 30);	
-		
-		
 	}
 
 	private void updateTiles() {
@@ -278,6 +299,7 @@ public class StartingClass extends Applet implements Runnable, KeyListener {
 			g.drawImage(t.getTileImage(), t.getTileX(), t.getTileY(), this);
 		}
 	}
+
 
 	@Override
 	public void keyPressed(KeyEvent e) {
@@ -315,7 +337,32 @@ public class StartingClass extends Applet implements Runnable, KeyListener {
 				robot.setReadyToFire(false);
 			}
 			break;
-
+			
+		case KeyEvent.VK_ENTER:
+			if (state == GameState.Dead){
+											
+				score = 0;
+				
+				robot.setJumped(false);
+				robot.setJumpLimit(false);
+				robot.setSpeedX(0);
+				robot.setSpeedY(0);
+				robot.setCenterX(100);
+				robot.setCenterY(377);
+				
+				bg1.setBgX(0);
+				bg1.setBgY(0);
+				bg2.setBgX(2160);
+				bg2.setBgY(0);
+				
+				tile = new Tile(0,0,0);				
+				tile.setSpeedX(0);
+				
+				
+				state = GameState.Running;
+				
+			}
+			break;
 		}
 	}
 
@@ -342,7 +389,7 @@ public class StartingClass extends Applet implements Runnable, KeyListener {
 
 		case KeyEvent.VK_SPACE:
 			break;
-			
+
 		case KeyEvent.VK_CONTROL:
 			robot.setReadyToFire(true);
 			break;
@@ -363,10 +410,10 @@ public class StartingClass extends Applet implements Runnable, KeyListener {
 		return bg2;
 	}
 
-	public static Robot getRobot(){
+	public static Robot getRobot() {
 		return robot;
 	}
-	
+
 	public static void setBg1(Background bg1) {
 		StartingClass.bg1 = bg1;
 	}
